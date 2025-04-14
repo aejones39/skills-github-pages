@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arthur's Avengers 2025 Swing for Childhood Lymphoma</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: #f9f9f9; }
+    h1, h2 { margin-bottom: 16px; }
+    .card { border: 1px solid #ccc; padding: 16px; margin-bottom: 16px; border-radius: 8px; background: white; }
+    .input { padding: 8px; margin: 4px 0; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+    .hole-input { width: 60px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+    .hole { display: flex; flex-direction: column; align-items: center; width: 70px; }
+    .button { padding: 10px 16px; border: none; background: #007bff; color: #fff; border-radius: 4px; cursor: pointer; font-size: 16px; margin-right: 8px; }
+    .button:hover { background: #0056b3; }
+    .leaderboard { margin-top: 20px; }
+    .leaderboard div { display: flex; justify-content: space-between; border: 1px solid #ccc; padding: 8px; margin-bottom: 4px; border-radius: 4px; background: white; }
+    .button-group { margin-bottom: 20px; }
+    @media (max-width: 600px) {
+      .hole { width: 100%; flex-direction: row; justify-content: space-between; }
+      .hole div { margin-right: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Arthur's Avengers 2025 Swing for Childhood Lymphoma</h1>
+  <div class="button-group">
+    <button class="button" onclick="addPlayer()">Add Team</button>
+    <button class="button" onclick="printScorecard()">Print Scorecard</button>
+    <button class="button" onclick="shareApp()">Share Scorecard</button>
+  </div>
+
+  <div id="leaderboard" class="leaderboard"></div>
+  <div id="scorecards"></div>
+
+  <script>
+    const holePar = Array(9).fill(3);
+    let players = JSON.parse(localStorage.getItem("nhvg_players")) || Array.from({ length: 18 }, (_, i) => ({ name: `Team ${i + 1}`, scores: Array(9).fill(0) }));
+
+    function savePlayers() {
+      localStorage.setItem("nhvg_players", JSON.stringify(players));
+    }
+
+    function addPlayer() {
+      players.push({ name: `Team ${players.length + 1}`, scores: Array(9).fill(0) });
+      savePlayers();
+      render();
+    }
+
+    function updateName(index, value) {
+      players[index].name = value;
+      savePlayers();
+      render();
+    }
+
+    function updateScore(playerIndex, holeIndex, value) {
+      players[playerIndex].scores[holeIndex] = parseInt(value) || 0;
+      savePlayers();
+      render();
+    }
+
+    function totalScore(scores) {
+      return scores.reduce((sum, val) => sum + val, 0);
+    }
+
+    function render() {
+      const container = document.getElementById("scorecards");
+      container.innerHTML = "";
+
+      players.forEach((player, pIdx) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const nameInput = document.createElement("input");
+        nameInput.className = "input";
+        nameInput.placeholder = "Team Name";
+        nameInput.value = player.name;
+        nameInput.oninput = (e) => updateName(pIdx, e.target.value);
+        card.appendChild(nameInput);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        holePar.forEach((_, hIdx) => {
+          const holeDiv = document.createElement("div");
+          holeDiv.className = "hole";
+
+          const label = document.createElement("div");
+          label.innerText = `Hole ${hIdx + 1}`;
+
+          const scoreInput = document.createElement("input");
+          scoreInput.className = "input hole-input";
+          scoreInput.type = "number";
+          scoreInput.min = 1;
+          scoreInput.value = player.scores[hIdx] || "";
+          scoreInput.oninput = (e) => updateScore(pIdx, hIdx, e.target.value);
+
+          holeDiv.appendChild(label);
+          holeDiv.appendChild(scoreInput);
+          grid.appendChild(holeDiv);
+        });
+
+        const total = document.createElement("div");
+        total.className = "input";
+        total.innerText = `Total: ${totalScore(player.scores)}`;
+        grid.appendChild(total);
+
+        card.appendChild(grid);
+        container.appendChild(card);
+      });
+
+      renderLeaderboard();
+    }
+
+    function renderLeaderboard() {
+      const leaderboard = document.getElementById("leaderboard");
+      leaderboard.innerHTML = "<h2>Leaderboard</h2>";
+
+      const sorted = [...players].sort(
+        (a, b) => totalScore(a.scores) - totalScore(b.scores)
+      );
+
+      sorted.forEach((player, idx) => {
+        const entry = document.createElement("div");
+        entry.innerHTML = `<span>${player.name}</span><span>Total: ${totalScore(player.scores)}</span>`;
+        leaderboard.appendChild(entry);
+      });
+    }
+
+    function printScorecard() {
+      window.print();
+    }
+
+    function shareApp() {
+      const shareUrl = window.location.href;
+      if (navigator.share) {
+        navigator.share({
+          title: "Arthur's Avengers Scorecard",
+          text: "Join us for the 2025 Swing for Childhood Lymphoma and enter team scores live!",
+          url: shareUrl
+        }).catch(console.error);
+      } else {
+        prompt("Copy this link to share:", shareUrl);
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
